@@ -33,10 +33,10 @@ clients = list()
 
 def send_all(msg):
     for client in clients:
-        client.put( msg )
+        client.put(msg)
 
 def send_all_json(obj):
-    send_all( json.dumps(obj) )
+    send_all(json.dumps(obj))
 
 class Client:
     def __init__(self):
@@ -63,7 +63,7 @@ class World:
         self.space[entity] = entry
         self.update_listeners( entity )
 
-    def set(self, entity, data):
+    def _set(self, entity, data):
         self.space[entity] = data
         self.update_listeners( entity )
 
@@ -74,6 +74,7 @@ class World:
 
     def clear(self):
         self.space = dict()
+        return self.space
 
     def get(self, entity):
         return self.space.get(entity,dict())
@@ -85,6 +86,9 @@ myWorld = World()
 
 def set_listener( entity, data ):
     ''' do something with the update ! '''
+    msg = json.dumps({entity: data})
+    for client in clients:
+        client.put(msg)
 
 myWorld.add_set_listener( set_listener )
         
@@ -102,7 +106,7 @@ def read_ws(ws,client):
             print("WS RECV: %s" % msg)
             if (msg is not None):
                 packet = json.loads(msg)
-                send_all_json( packet )
+                send_all_json(packet)
             else:
                 break
     except:
@@ -146,7 +150,7 @@ def flask_post_json():
 def update(entity):
     '''update the entities via this interface'''
     vals = flask_post_json()
-    return json.dumps(myWorld.set(entity, vals))
+    return json.dumps(myWorld._set(entity, vals))
 
 @app.route("/world", methods=['POST','GET'])    
 def world():

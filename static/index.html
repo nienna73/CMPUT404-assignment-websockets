@@ -334,6 +334,13 @@ function wsSetup() {
     var url = "ws://"+host+"/subscribe";   
     socket = new WebSocket(url);
     socket.onopen = function() {
+        // fetch the current world
+        fetch('./world').then((response) => {
+            return response.json();
+        }).then((data) => {
+            world = data;
+            drawNextFrame();
+        });
     };
     socket.onerror = function(msg) {
         debug("WebSocket Error:" + msg.data);
@@ -342,7 +349,7 @@ function wsSetup() {
         try {
             debug("WebSocket Recv:" + msg.data);
             var data = JSON.parse(msg.data);
-            addMessage(data);        
+            addMessage(data);   
         } catch (e) {
             alert("socket on message: " + e);
         }
